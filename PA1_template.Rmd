@@ -1,14 +1,14 @@
 ---
 title: "Peer Assessment 1"
 author: "Aníbal Brenes Jiménez"
-date: "13 de julio de 2015"
+date: "16 July 2015"
 output: html_document
 ---
 
 ##Loading and preprocessing the data
 
 ```{r load data}
-dat<-read.csv("C:/Users/anbren2/Documents/Data Science/05 Reproducible research/activity.csv")
+dat<-read.csv("C:/Users/anbren2/Documents/Data_Science/05 Reproducible research/activity.csv")
 head(dat)
 ```
 ##Mean total number of steps taken per day
