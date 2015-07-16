@@ -1,0 +1,110 @@
+---
+title: "Peer Assessment 1"
+author: "Aníbal Brenes Jiménez"
+date: "13 de julio de 2015"
+output: html_document
+---
+
+##Loading and preprocessing the data
+
+```{r load data}
+dat<-read.csv("C:/Users/anbren2/Documents/Data Science/05 Reproducible research/activity.csv")
+head(dat)
+```
+##Mean total number of steps taken per day
+
+```{r mean}
+daytotal <- 1:(nrow(dat)/288)
+for (i in 1:length(daytotal)){
+  x <- (i-1)*288+1
+  y <- 288*i
+  daytotal[i] <- sum(dat$steps[x:y],na.rm = T)
+}
+
+daytotal
+
+hist(daytotal,breaks = seq(from = 0, to = max(daytotal,na.rm = T), by = max(daytotal,na.rm = T)/10 ), xlab = "Number of steps", main = "Histogram with raw data")
+
+meandt <- mean(daytotal,na.rm = T)
+meandt  <- round(meandt, digits = 2)
+mediandt <- median(daytotal,na.rm = T)
+
+```
+The mean of the total number of steps taken per day is `r meandt` and the median is `r mediandt`
+
+##Average daily activity pattern
+
+```{r}
+interv <- dat$interval[1:288]
+intmean <- NULL
+intsum <- NULL
+for (i in 1:288){
+  intmean[i]<-mean(dat$steps[dat$interval==interv[i]],na.rm=T)
+  }
+plot(interv,intmean,type = "l")
+maxsteps<-interv[intmean == max(intmean)]
+```
+
+The interval which, on average, contains the maximum number of steps is `r maxsteps`
+
+
+#Imputing missing values
+
+
+```{r}
+qna <- sum(is.na(dat$steps))
+```
+
+
+The total number of missing values in the dataset is `r qna`
+
+```{r}
+#Missing values will be filled with the mean for the corresponding 5-min interval
+meancomp <- rep(intmean, times = 61)
+datcomp <- dat
+datcomp$steps[is.na(datcomp$steps)]<-meancomp[is.na(datcomp$steps)]
+
+daytotal <- 1:(nrow(dat)/288)
+for (i in 1:length(daytotal)){
+  x <- (i-1)*288+1
+  y <- 288*i
+  daytotal[i] <- sum(datcomp$steps[x:y])
+}
+daytotal
+hist(daytotal,breaks = seq(from = 0, to = max(daytotal), by = max(daytotal)/10 ), xlab = "Amount of steps", main = "Histogram with filled data")
+
+meandt <- mean(daytotal)
+meandt  <- round(meandt, digits = 0)
+mediandt <- median(daytotal)
+mediandt  <- round(mediandt, digits = 0)
+```
+The mean of the total number of steps taken per day, after filling the missing values is `r meandt` and the median is `r mediandt`.
+
+The mean value has been increased considerably due to in the first case, days without data are considered to have 0 steps (that is possible to see in the first histogram), and now these days have 10766.19 steps. Besides, the median was also increased for the same reason.  
+
+##Differences in activity patterns between weekdays and weekends
+
+```{r weekdays}
+library(timeDate)
+wdays <- isWeekday(as.POSIXct(dat$date))
+datcomp <- data.frame(datcomp, day = wdays)
+datcomp$day[datcomp$day==T] <- "Weekday"
+datcomp$day[datcomp$day==F] <- "Weekend"
+head(datcomp)
+
+intmeanwd <- NULL
+intmeanwe <- NULL
+
+for (i in 1:288){
+intmeanwd[i]<-mean(datcomp$steps[datcomp$interval==interv[i]& datcomp$day == "Weekday" ],na.rm=T)
+intmeanwe[i]<-mean(datcomp$steps[datcomp$interval==interv[i]& datcomp$day == "Weekend" ],na.rm=T)
+}
+
+par(mfrow=c(3,1))
+plot(interv,intmeanwd,type="l", main = "Weekdays", xlab = "5 min interval", ylab = "Avg steps taken")
+plot(interv,intmeanwe,type="l",col = "red", main = "Weekends",xlab = "5 min interval", ylab = "Avg steps taken")
+plot(interv,intmeanwd,type="l",xlab = "5 min interval", ylab = "Avg steps taken")
+lines(interv,intmeanwe, col="red")
+
+```
+
